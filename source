@@ -55,7 +55,6 @@ Tab:AddToggle({
 					local player = game.Players.LocalPlayer
 					local playerName = player.Name
 
-					-- Get the player's blob size by searching for the correct TextLabel in BillboardGui
 					local playerBlobGui = game.Workspace[playerName].Blob.Attachment.BillboardGui
 					local playerBlobSize
 
