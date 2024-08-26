@@ -1,6 +1,6 @@
 local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
 
-local suggestedGameID = 172402137801
+local suggestedGameID = 17240213780
 local currentGameID = game.PlaceId
 
 function createMainWindow()
