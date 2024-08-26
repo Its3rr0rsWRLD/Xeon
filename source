@@ -1,3 +1,12 @@
 local currentGameID = game.PlaceId
 
-loadstring(game:HttpGet('https://raw.githubusercontent.com/Its3rr0rsWRLD/GiggleHub/' .. currentGameID .. '/source'))
+local scriptUrl = 'https://raw.githubusercontent.com/Its3rr0rsWRLD/GiggleHub/main/scripts/' .. currentGameID .. '/source'
+local scriptContent = game:HttpGet(scriptUrl)
+
+local loadedScript = loadstring(scriptContent)
+
+if loadedScript then
+    loadedScript()
+else
+    print("Failed to load script.")
+end
