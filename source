@@ -1,109 +1,132 @@
 local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
 
-local Window = OrionLib:MakeWindow({Name = "GiggleHub", HidePremium = false, SaveConfig = true, ConfigFolder = "GiggleHub-BlobEatingSim"})
+local suggestedGameID = 172402137801
+local currentGameID = game.PlaceId
 
-local Tab = Window:MakeTab({
-	Name = "Menu",
-	Icon = "rbxassetid://4483345998",
-	PremiumOnly = false
-})
+function createMainWindow()
+	local Window = OrionLib:MakeWindow({Name = "GiggleHub | BlobEatingSim", HidePremium = false, SaveConfig = true, ConfigFolder = "GiggleHub-BlobEatingSim"})
 
-local Section = Tab:AddSection({
-	Name = "Menu"
-})
+	local Tab = Window:MakeTab({
+		Name = "Menu",
+		Icon = "rbxassetid://4483345998",
+		PremiumOnly = false
+	})
 
-local AutoFarmToggle = false
-local EatKidsToggle = false
+	local Section = Tab:AddSection({
+		Name = "Menu"
+	})
 
-Tab:AddToggle({
-	Name = "Toggle Autofarm",
-	Default = false,
-	Callback = function(Value)
-		AutoFarmToggle = Value
-		if AutoFarmToggle then
-			spawn(function()
-				while AutoFarmToggle do
-					local player = game.Players.LocalPlayer
-					local character = player.Character or player.CharacterAdded:Wait()
+	local AutoFarmToggle = false
+	local EatKidsToggle = false
 
-					local blobsFolder = game.Workspace:WaitForChild("Blobs")
+	Tab:AddToggle({
+		Name = "Toggle Autofarm",
+		Default = false,
+		Callback = function(Value)
+			AutoFarmToggle = Value
+			if AutoFarmToggle then
+				spawn(function()
+					while AutoFarmToggle do
+						local player = game.Players.LocalPlayer
+						local character = player.Character or player.CharacterAdded:Wait()
 
-					for _, blob in pairs(blobsFolder:GetChildren()) do
-						if not AutoFarmToggle then break end
-						if blob:IsA("BasePart") then
-							character:SetPrimaryPartCFrame(blob.CFrame)
-							wait(0.1)
+						local blobsFolder = game.Workspace:WaitForChild("Blobs")
+
+						for _, blob in pairs(blobsFolder:GetChildren()) do
+							if not AutoFarmToggle then break end
+							if blob:IsA("BasePart") then
+								character:SetPrimaryPartCFrame(blob.CFrame)
+								wait(0.1)
+							end
 						end
+
+						wait(0.1)
 					end
+				end)
+			end
+		end    
+	})
 
-					wait(0.1)
-				end
-			end)
-		end
-	end    
-})
+	Tab:AddToggle({
+		Name = "Eat Kids (Half Works)",
+		Default = false,
+		Callback = function(Value)
+			EatKidsToggle = Value
+			if EatKidsToggle then
+				spawn(function()
+					while EatKidsToggle do
+						local player = game.Players.LocalPlayer
+						local playerName = player.Name
 
-Tab:AddToggle({
-	Name = "Eat Kids (Half Works)",
-	Default = false,
-	Callback = function(Value)
-		EatKidsToggle = Value
-		print(EatKidsToggle)
-		if EatKidsToggle then
-			spawn(function()
-				while EatKidsToggle do
-					local player = game.Players.LocalPlayer
-					local playerName = player.Name
+						local playerBlobGui = game.Workspace[playerName].Blob.Attachment.BillboardGui
+						local playerBlobSize
 
-					local playerBlobGui = game.Workspace[playerName].Blob.Attachment.BillboardGui
-					local playerBlobSize
-
-					for _, guiElement in pairs(playerBlobGui:GetChildren()) do
-						if guiElement:IsA("TextLabel") and tonumber(guiElement.Text) then
-							playerBlobSize = tonumber(guiElement.Text)
-							break
+						for _, guiElement in pairs(playerBlobGui:GetChildren()) do
+							if guiElement:IsA("TextLabel") and tonumber(guiElement.Text) then
+								playerBlobSize = tonumber(guiElement.Text)
+								break
+							end
 						end
-					end
 
-					if playerBlobSize then
-						for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-							if not EatKidsToggle then break end
-							if otherPlayer.Name ~= playerName and game.Workspace:FindFirstChild(otherPlayer.Name) then
-								local otherBlobGui = game.Workspace[otherPlayer.Name].Blob.Attachment.BillboardGui
-								local otherBlobSize
+						if playerBlobSize then
+							for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+								if not EatKidsToggle then break end
+								if otherPlayer.Name ~= playerName and game.Workspace:FindFirstChild(otherPlayer.Name) then
+									local otherBlobGui = game.Workspace[otherPlayer.Name].Blob.Attachment.BillboardGui
+									local otherBlobSize
 
-								for _, guiElement in pairs(otherBlobGui:GetChildren()) do
-									if guiElement:IsA("TextLabel") and tonumber(guiElement.Text) then
-										otherBlobSize = tonumber(guiElement.Text)
-										break
+									for _, guiElement in pairs(otherBlobGui:GetChildren()) do
+										if guiElement:IsA("TextLabel") and tonumber(guiElement.Text) then
+											otherBlobSize = tonumber(guiElement.Text)
+											break
+										end
 									end
-								end
 
-								if otherBlobSize then
-									print(playerName .. "'s blob size: " .. playerBlobSize)
-									print(otherPlayer.Name .. "'s blob size: " .. otherBlobSize)
-
-									if otherBlobSize < playerBlobSize then
-										print("Teleporting to " .. otherPlayer.Name)
-										local character = player.Character or player.CharacterAdded:Wait()
-										character:SetPrimaryPartCFrame(game.Workspace[otherPlayer.Name].Blob.CFrame)
-										wait(0.1)
+									if otherBlobSize then
+										if otherBlobSize < playerBlobSize then
+											local character = player.Character or player.CharacterAdded:Wait()
+											character:SetPrimaryPartCFrame(game.Workspace[otherPlayer.Name].Blob.CFrame)
+											wait(0.1)
+										end
 									end
 								end
 							end
 						end
+
+						wait(0.1)
 					end
-
-					wait(0.1)
-				end
-			end)
+				end)
+			end
 		end
-	end
-})
+	})
 
-Tab:AddButton({
-	Name = "Kill Script",
-	Callback = function()
-		OrionLib:Destroy()
-	end
-})
+	Tab:AddButton({
+		Name = "Kill Script",
+		Callback = function()
+			OrionLib:Destroy()
+		end
+	})
+end
+
+if currentGameID ~= suggestedGameID then
+	local WarningWindow = OrionLib:MakeWindow({Name = "Warning", HidePremium = false, SaveConfig = false, ConfigFolder = "GiggleHub-Warning"})
+	local WarningTab = WarningWindow:MakeTab({Name = "Warning", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+	WarningTab:AddLabel("This script is made for the Game ID ")
+	WarningTab:AddLabel(suggestedGameID .. " but this isn't it.")
+	WarningTab:AddLabel("Do you want to continue anyway?")
+	WarningTab:AddButton({
+		Name = "Continue",
+		Callback = function()
+			WarningWindow:Destroy()
+			createMainWindow()
+		end
+	})
+	WarningTab:AddButton({
+		Name = "Cancel",
+		Callback = function()
+			OrionLib:Destroy()
+		end
+	})
+else
+	createMainWindow()
+end
