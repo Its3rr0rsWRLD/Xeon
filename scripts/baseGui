@@ -1,0 +1,55 @@
+local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
+
+local currentGameID = game.PlaceId
+
+function createMainWindow()
+	local Window = OrionLib:MakeWindow({Name = "GiggleHub | " .. gameName, HidePremium = false, SaveConfig = true, ConfigFolder = "GiggleHub-BlobEatingSim"})
+
+	local Tab = Window:MakeTab({
+		Name = "Menu",
+		Icon = "rbxassetid://4483345998",
+		PremiumOnly = false
+	})
+
+	local Section = Tab:AddSection({
+		Name = "Menu"
+	})
+
+	local AutoFarmToggle = false
+
+	Tab:AddToggle({
+		Name = "Toggle Autofarm",
+		Default = false,
+		Callback = autoFarmFunction()
+	})
+
+	Tab:AddButton({
+		Name = "Kill Script",
+		Callback = function()
+			OrionLib:Destroy()
+		end
+	})
+end
+
+if currentGameID ~= suggestedGameID then
+	local WarningWindow = OrionLib:MakeWindow({Name = "Warning", HidePremium = false, SaveConfig = false, ConfigFolder = "GiggleHub-Warning"})
+	local WarningTab = WarningWindow:MakeTab({Name = "Warning", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+	WarningTab:AddLabel("This script is made for the Game ID ")
+	WarningTab:AddLabel(suggestedGameID .. " but this isn't it.")
+	WarningTab:AddLabel("Do you want to continue anyway?")
+	WarningTab:AddButton({
+		Name = "Continue",
+		Callback = function()
+			createMainWindow()
+			WarningWindow:Destroy()
+		end
+	})
+	WarningTab:AddButton({
+		Name = "Cancel",
+		Callback = function()
+			OrionLib:Destroy()
+		end
+	})
+else
+	createMainWindow()
+end
