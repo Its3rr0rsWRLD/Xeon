@@ -2,7 +2,7 @@ local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shle
 
 local suggestedGameID = _G.suggestedGameID
 local gameName = _G.gameName
-local autoFarmFunction = _G.autoFarmFunction()
+local autoFarmFunction = _G.autoFarmFunction
 
 local currentGameID = game.PlaceId
 
@@ -24,7 +24,12 @@ function createMainWindow()
 	Tab:AddToggle({
 		Name = "Toggle Autofarm",
 		Default = false,
-		Callback = autoFarmFunction()
+		Callback = function(Value)
+			AutoFarmToggle = Value
+			if AutoFarmToggle then
+				autoFarmFunction()
+			end
+		end
 	})
 
 	Tab:AddButton({
