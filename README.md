@@ -3,9 +3,8 @@
 It's a hub. For scripts. Duh. The name is random :3
 
 ## Supported Games
-https://www.roblox.com/games/17240213780/Blob-Eating-Simulator
-
-https://www.roblox.com/games/19005776777/Pyramid-Eaters
+- https://www.roblox.com/games/17240213780/Blob-Eating-Simulator
+- https://www.roblox.com/games/19005776777/Pyramid-Eaters
 
 ## Running the script
 Paste `loadstring(game:HttpGet('https://raw.githubusercontent.com/Its3rr0rsWRLD/BlobEatingSim-Script/main/source'))()`
