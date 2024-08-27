@@ -1,8 +1,8 @@
 local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
 
 local suggestedGameID = _G.suggestedGameID
-local currentGameID = _G.currentGameID
-local walkspeed = _G.walkspeed
+local gameName = _G.gameName
+local autoFarmFunction = _G.autoFarmFunction()
 
 local currentGameID = game.PlaceId
 
