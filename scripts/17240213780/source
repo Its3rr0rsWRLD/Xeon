@@ -3,7 +3,7 @@ local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shle
 local suggestedGameID = 17240213780
 local currentGameID = game.PlaceId
 
-local debugMode = true
+local debugMode = false
 
 function createMainWindow()
 	local Window = OrionLib:MakeWindow({Name = "GiggleHub | BlobEatingSim", HidePremium = false, SaveConfig = true, ConfigFolder = "GiggleHub-BlobEatingSim"})
