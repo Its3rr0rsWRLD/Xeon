@@ -1,0 +1,113 @@
+local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
+
+local suggestedGameID = 19005776777
+local currentGameID = game.PlaceId
+
+local walkspeed = 16
+
+-- Walkspeed adjustment loop
+spawn(function()
+    while true do
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoid = character:WaitForChild("Humanoid")
+
+        -- Check and set the player's walk speed
+        if humanoid.WalkSpeed ~= walkspeed then
+            humanoid.WalkSpeed = walkspeed
+        end
+
+        wait(0.1) -- Adjust this interval as needed
+    end
+end)
+
+function createMainWindow()
+	local Window = OrionLib:MakeWindow({Name = "GiggleHub | Pyramid Eaters", HidePremium = false, SaveConfig = true, ConfigFolder = "GiggleHub-BlobEatingSim"})
+
+	local Tab = Window:MakeTab({
+		Name = "Menu",
+		Icon = "rbxassetid://4483345998",
+		PremiumOnly = false
+	})
+
+	local Section = Tab:AddSection({
+		Name = "Menu"
+	})
+
+	Tab:AddSlider({
+		Name = "Walkspeed",
+		Min = 16,
+		Max = 500,
+		Default = walkspeed,
+		Color = Color3.fromRGB(255, 255, 255),
+		Increment = 1,
+		ValueName = "Walkspeed",
+		Callback = function(Value)
+			walkspeed = Value
+		end    
+	})
+
+	local AutoFarmToggle = false
+
+	Tab:AddToggle({
+		Name = "Toggle Autofarm",
+		Default = false,
+		Callback = function(Value)
+			AutoFarmToggle = Value
+			if AutoFarmToggle then
+				spawn(function()
+					while AutoFarmToggle do
+						local player = game.Players.LocalPlayer
+						local character = player.Character or player.CharacterAdded:Wait()
+						local humanoid = character:WaitForChild("Humanoid")
+
+						local foodFolder = game.Workspace.Game:WaitForChild("Food")
+
+						for _, food in pairs(foodFolder:GetChildren()) do
+							if not AutoFarmToggle then break end
+							if food:IsA("Model") and food.Hitbox:IsA("BasePart") then
+								local offsetCFrame = food.Hitbox.CFrame * CFrame.new(0, 0, 16)
+								character:SetPrimaryPartCFrame(offsetCFrame)
+								humanoid:MoveTo(food.Hitbox.Position)
+								humanoid.MoveToFinished:Wait()
+								wait(0.1)
+							end
+						end
+
+						wait(0.1)
+					end
+				end)
+			end
+		end    
+	})
+
+	Tab:AddButton({
+		Name = "Kill Script",
+		Callback = function()
+			OrionLib:Destroy()
+		end
+	})
+end
+
+if currentGameID ~= suggestedGameID then
+	local WarningWindow = OrionLib:MakeWindow({Name = "Warning", HidePremium = false, SaveConfig = false, ConfigFolder = "GiggleHub-Warning"})
+	local WarningTab = WarningWindow:MakeTab({Name = "Warning", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+	WarningTab:AddLabel("This script is made for the Game ID ")
+	WarningTab:AddLabel(suggestedGameID .. " but this isn't it.")
+	WarningTab:AddLabel("Do you want to continue anyway?")
+	WarningTab:AddButton({
+		Name = "Continue",
+		Callback = function()
+			createMainWindow()
+			WarningWindow:Destroy()
+		end
+	})
+	WarningTab:AddButton({
+		Name = "Cancel",
+		Callback = function()
+			OrionLib:Destroy()
+		end
+	})
+else
+	createMainWindow()
+end
