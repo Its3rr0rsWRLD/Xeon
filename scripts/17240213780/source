@@ -3,6 +3,8 @@ local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shle
 local suggestedGameID = 17240213780
 local currentGameID = game.PlaceId
 
+local debugMode = true
+
 function createMainWindow()
 	local Window = OrionLib:MakeWindow({Name = "GiggleHub | BlobEatingSim", HidePremium = false, SaveConfig = true, ConfigFolder = "GiggleHub-BlobEatingSim"})
 
@@ -12,12 +14,33 @@ function createMainWindow()
 		PremiumOnly = false
 	})
 
-	local Section = Tab:AddSection({
-		Name = "Menu"
+	local UpdateLog = Window:MakeTab({
+		Name = "Update Logs",
+		Icon = "rbxassetid://92064887636652",
+		PremiumOnly = false
 	})
+
+	local Upd1 = UpdateLog:AddLabel("Blob Eatimg Simulator V1.0.4")
+	local Upd2 = UpdateLog:AddLabel("Added Safe Distance")
+
+	local Section = Tab:AddSection({Name = "Menu"})
 
 	local AutoFarmToggle = false
 	local EatKidsToggle = false
+	local SafeDistance = 0
+
+	Tab:AddSlider({
+		Name = "Safe Distance",
+		Min = 0,
+		Max = 512,
+		Default = 100,
+		Color = Color3.fromRGB(255,255,255),
+		Increment = 1,
+		ValueName = "Studs",
+		Callback = function(Value)
+			SafeDistance = Value
+		end
+	})
 
 	Tab:AddToggle({
 		Name = "Toggle Autofarm",
@@ -29,14 +52,28 @@ function createMainWindow()
 					while AutoFarmToggle do
 						local player = game.Players.LocalPlayer
 						local character = player.Character or player.CharacterAdded:Wait()
-
 						local blobsFolder = game.Workspace:WaitForChild("Blobs")
 
 						for _, blob in pairs(blobsFolder:GetChildren()) do
 							if not AutoFarmToggle then break end
 							if blob:IsA("BasePart") then
-								character:SetPrimaryPartCFrame(blob.CFrame)
-								wait(0.1)
+								local isSafe = true
+
+								for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+									if otherPlayer.Name ~= player.Name and game.Workspace:FindFirstChild(otherPlayer.Name) then
+										local otherCharacter = game.Workspace[otherPlayer.Name]
+										local distance = (otherCharacter.PrimaryPart.Position - blob.Position).Magnitude
+										if distance < SafeDistance then
+											isSafe = false
+											break
+										end
+									end
+								end
+
+								if isSafe then
+									character:SetPrimaryPartCFrame(blob.CFrame)
+									wait(0.1)
+								end
 							end
 						end
 
@@ -48,7 +85,7 @@ function createMainWindow()
 	})
 
 	Tab:AddToggle({
-		Name = "Eat Kids (Half Works)",
+		Name = "Eat Kids",
 		Default = false,
 		Callback = function(Value)
 			EatKidsToggle = Value
@@ -57,38 +94,18 @@ function createMainWindow()
 					while EatKidsToggle do
 						local player = game.Players.LocalPlayer
 						local playerName = player.Name
+						local playerBlobSize = player.leaderstats.Size.Value
 
-						local playerBlobGui = game.Workspace[playerName].Blob.Attachment.BillboardGui
-						local playerBlobSize
+						for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+							if not EatKidsToggle then break end
+							if otherPlayer.Name ~= playerName and otherPlayer:FindFirstChild("leaderstats") then
+								local otherBlobSize = otherPlayer.leaderstats.Size.Value
 
-						for _, guiElement in pairs(playerBlobGui:GetChildren()) do
-							if guiElement:IsA("TextLabel") and tonumber(guiElement.Text) then
-								playerBlobSize = tonumber(guiElement.Text)
-								break
-							end
-						end
-
-						if playerBlobSize then
-							for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-								if not EatKidsToggle then break end
-								if otherPlayer.Name ~= playerName and game.Workspace:FindFirstChild(otherPlayer.Name) then
-									local otherBlobGui = game.Workspace[otherPlayer.Name].Blob.Attachment.BillboardGui
-									local otherBlobSize
-
-									for _, guiElement in pairs(otherBlobGui:GetChildren()) do
-										if guiElement:IsA("TextLabel") and tonumber(guiElement.Text) then
-											otherBlobSize = tonumber(guiElement.Text)
-											break
-										end
-									end
-
-									if otherBlobSize then
-										if otherBlobSize < playerBlobSize then
-											local character = player.Character or player.CharacterAdded:Wait()
-											character:SetPrimaryPartCFrame(game.Workspace[otherPlayer.Name].Blob.CFrame)
-											wait(0.1)
-										end
-									end
+								if otherBlobSize and otherBlobSize < playerBlobSize then
+									local character = player.Character or player.CharacterAdded:Wait()
+									character:SetPrimaryPartCFrame(game.Workspace[otherPlayer.Name].Blob.CFrame)
+									if debugMode then print("Moved to eat " .. otherPlayer.Name) end
+									wait(0.1)
 								end
 							end
 						end
