@@ -5,19 +5,18 @@ local currentGameID = game.PlaceId
 
 local walkspeed = 16
 
--- Walkspeed adjustment loop
+-- Added this cuz the game resets the dang walkspeed each time >:(
 spawn(function()
     while true do
         local player = game.Players.LocalPlayer
         local character = player.Character or player.CharacterAdded:Wait()
         local humanoid = character:WaitForChild("Humanoid")
 
-        -- Check and set the player's walk speed
         if humanoid.WalkSpeed ~= walkspeed then
             humanoid.WalkSpeed = walkspeed
         end
 
-        wait(0.1) -- Adjust this interval as needed
+        wait(0.1)
     end
 end)
 
