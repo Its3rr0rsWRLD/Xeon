@@ -8,7 +8,7 @@ It's a hub. For scripts. Duh. The name is random :3
 - https://www.roblox.com/games/16426855766/Eat-Pizza-Simulator
 
 ## Running the script
-Paste `loadstring(game:HttpGet('https://raw.githubusercontent.com/Its3rr0rsWRLD/BlobEatingSim-Script/main/source'))()`
+Paste `loadstring(game:HttpGet('https://raw.githubusercontent.com/Its3rr0rsWRLD/GiggleHub/main/source'))()`
 
 ## Recommended Executor
 ![celery](https://github.com/user-attachments/assets/24e073c8-6ea0-43d9-a975-27166e33a5e8)
