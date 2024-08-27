@@ -1,13 +1,28 @@
 local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
 
+if not OrionLib then
+    warn("OrionLib failed to load.")
+    return
+end
+
 local suggestedGameID = _G.suggestedGameID
 local gameName = _G.gameName
 local autoFarmFunction = _G.autoFarmFunction
 
+if not suggestedGameID or not gameName or not autoFarmFunction then
+    warn("Required global variables are missing.")
+    return
+end
+
 local currentGameID = game.PlaceId
 
 function createMainWindow()
-	local Window = OrionLib:MakeWindow({Name = "GiggleHub | " .. gameName, HidePremium = false, SaveConfig = true, ConfigFolder = "GiggleHub-BlobEatingSim"})
+	local Window = OrionLib:MakeWindow({
+        Name = "GiggleHub | " .. gameName, 
+        HidePremium = false, 
+        SaveConfig = true, 
+        ConfigFolder = "GiggleHub-BlobEatingSim"
+    })
 
 	local Tab = Window:MakeTab({
 		Name = "Menu",
@@ -41,8 +56,17 @@ function createMainWindow()
 end
 
 if currentGameID ~= suggestedGameID then
-	local WarningWindow = OrionLib:MakeWindow({Name = "Warning", HidePremium = false, SaveConfig = false, ConfigFolder = "GiggleHub-Warning"})
-	local WarningTab = WarningWindow:MakeTab({Name = "Warning", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+	local WarningWindow = OrionLib:MakeWindow({
+        Name = "Warning", 
+        HidePremium = false, 
+        SaveConfig = false, 
+        ConfigFolder = "GiggleHub-Warning"
+    })
+	local WarningTab = WarningWindow:MakeTab({
+        Name = "Warning", 
+        Icon = "rbxassetid://4483345998", 
+        PremiumOnly = false
+    })
 	WarningTab:AddLabel("This script is made for the Game ID ")
 	WarningTab:AddLabel(suggestedGameID .. " but this isn't it.")
 	WarningTab:AddLabel("Do you want to continue anyway?")
