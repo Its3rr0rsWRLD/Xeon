@@ -4,14 +4,15 @@ local suggestedGameID = 19005776777
 local currentGameID = game.PlaceId
 
 local walkspeed = 16
+local spawnOffset = 16 -- Distance offset from food (used in autofarm)
 
--- Added this cuz the game resets the dang walkspeed each time >:(
+-- Continuously reset the walkspeed since the game resets it periodically
 spawn(function()
     while true do
         local player = game.Players.LocalPlayer
         local character = player.Character or player.CharacterAdded:Wait()
         local humanoid = character:WaitForChild("Humanoid")
-
+        
         if humanoid.WalkSpeed ~= walkspeed then
             humanoid.WalkSpeed = walkspeed
         end
@@ -21,92 +22,176 @@ spawn(function()
 end)
 
 function createMainWindow()
-	local Window = OrionLib:MakeWindow({Name = "GiggleHub | Pyramid Eaters", HidePremium = false, SaveConfig = true, ConfigFolder = "GiggleHub-BlobEatingSim"})
+    local Window = OrionLib:MakeWindow({
+        Name = "GiggleHub | Pyramid Eaters", 
+        HidePremium = false, 
+        SaveConfig = true, 
+        ConfigFolder = "GiggleHub-BlobEatingSim"
+    })
 
-	local Tab = Window:MakeTab({
-		Name = "Menu",
-		Icon = "rbxassetid://4483345998",
-		PremiumOnly = false
-	})
+    local Tab = Window:MakeTab({
+        Name = "Menu",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
 
-	local Section = Tab:AddSection({
-		Name = "Menu"
-	})
+    Tab:AddSection({
+        Name = "Menu"
+    })
 
-	Tab:AddSlider({
-		Name = "Walkspeed",
-		Min = 16,
-		Max = 500,
-		Default = walkspeed,
-		Color = Color3.fromRGB(255, 255, 255),
-		Increment = 1,
-		ValueName = "Walkspeed",
-		Callback = function(Value)
-			walkspeed = Value
-		end    
-	})
+    -- Walkspeed slider
+    Tab:AddSlider({
+        Name = "Walkspeed",
+        Min = 16,
+        Max = 500,
+        Default = walkspeed,
+        Color = Color3.fromRGB(255, 255, 255),
+        Increment = 1,
+        ValueName = "Walkspeed",
+        Callback = function(Value)
+            walkspeed = Value
+        end    
+    })
+    
+    -- Spawn offset slider (for the autofarm food teleportation)
+    Tab:AddSlider({
+        Name = "Spawn Offset (Studs)",
+        Min = 0,
+        Max = 100,
+        Default = spawnOffset,
+        Color = Color3.fromRGB(255, 255, 255),
+        Increment = 1,
+        ValueName = "Offset",
+        Callback = function(Value)
+            spawnOffset = Value
+        end    
+    })
 
-	local AutoFarmToggle = false
+    local AutoFarmToggle = false
 
-	Tab:AddToggle({
-		Name = "Toggle Autofarm",
-		Default = false,
-		Callback = function(Value)
-			AutoFarmToggle = Value
-			if AutoFarmToggle then
-				spawn(function()
-					while AutoFarmToggle do
-						local player = game.Players.LocalPlayer
-						local character = player.Character or player.CharacterAdded:Wait()
-						local humanoid = character:WaitForChild("Humanoid")
+    Tab:AddToggle({
+        Name = "Toggle Autofarm",
+        Default = false,
+        Callback = function(Value)
+            AutoFarmToggle = Value
+            if AutoFarmToggle then
+                spawn(function()
+                    while AutoFarmToggle do
+                        local player = game.Players.LocalPlayer
+                        local character = player.Character or player.CharacterAdded:Wait()
+                        local humanoid = character:WaitForChild("Humanoid")
 
-						local foodFolder = game.Workspace.Game:WaitForChild("Food")
+                        local foodFolder = game.Workspace.Game:WaitForChild("Food")
+                        local closestFood = nil
+                        local closestDistance = math.huge
+                        local characterPos = character.PrimaryPart and character.PrimaryPart.Position or Vector3.new(0, 0, 0)
 
-						for _, food in pairs(foodFolder:GetChildren()) do
-							if not AutoFarmToggle then break end
-							if food:IsA("Model") and food.Hitbox:IsA("BasePart") then
-								local offsetCFrame = food.Hitbox.CFrame * CFrame.new(0, 0, 16)
-								character:SetPrimaryPartCFrame(offsetCFrame)
-								humanoid:MoveTo(food.Hitbox.Position)
-								humanoid.MoveToFinished:Wait()
-								wait(0.1)
-							end
-						end
+                        -- Find the closest food by comparing distances
+                        for _, food in pairs(foodFolder:GetChildren()) do
+                            if food:IsA("Model") and food:FindFirstChild("Hitbox") and food.Hitbox:IsA("BasePart") then
+                                local distance = (food.Hitbox.Position - characterPos).Magnitude
+                                if distance < closestDistance then
+                                    closestDistance = distance
+                                    closestFood = food
+                                end
+                            end
+                        end
 
-						wait(0.1)
-					end
-				end)
-			end
-		end    
-	})
+                        if closestFood then
+                            -- Teleport to a point offset from the food's Hitbox by the user-specified number of studs
+                            local offsetCFrame = closestFood.Hitbox.CFrame * CFrame.new(0, 0, spawnOffset)
+                            character:SetPrimaryPartCFrame(offsetCFrame)
+                            humanoid:MoveTo(closestFood.Hitbox.Position)
+                            humanoid.MoveToFinished:Wait()
+                        end
 
-	Tab:AddButton({
-		Name = "Kill Script",
-		Callback = function()
-			OrionLib:Destroy()
-		end
-	})
+                        wait(0.1)
+                    end
+                end)
+            end
+        end    
+    })
+
+    local EatOthersToggle = false
+
+    -- New toggle to Eat Others: Teleport to players with a smaller Size value
+    Tab:AddToggle({
+        Name = "Eat Others",
+        Default = false,
+        Callback = function(Value)
+            EatOthersToggle = Value
+            if EatOthersToggle then
+                spawn(function()
+                    while EatOthersToggle do
+                        local localPlayer = game.Players.LocalPlayer
+                        local localCharacter = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+                        local localLeaderstats = localPlayer:FindFirstChild("leaderstats")
+                        local mySize = 0
+                        if localLeaderstats and localLeaderstats:FindFirstChild("Size") then
+                            mySize = localLeaderstats.Size.Value
+                        end
+
+                        for _, player in pairs(game.Players:GetPlayers()) do
+                            if player ~= localPlayer and player.Character and player.Character.PrimaryPart then
+                                local theirLeaderstats = player:FindFirstChild("leaderstats")
+                                local theirSize = 0
+                                if theirLeaderstats and theirLeaderstats:FindFirstChild("Size") then
+                                    theirSize = theirLeaderstats.Size.Value
+                                end
+                                if theirSize < mySize then
+                                    -- Teleport the local character to the target player's character
+                                    local targetCharacter = player.Character
+                                    if targetCharacter and targetCharacter.PrimaryPart then
+                                        localCharacter:SetPrimaryPartCFrame(targetCharacter.PrimaryPart.CFrame)
+                                        wait(0.2)
+                                    end
+                                end
+                            end
+                        end
+
+                        wait(0.5)
+                    end
+                end)
+            end
+        end
+    })
+
+    Tab:AddButton({
+        Name = "Kill Script",
+        Callback = function()
+            OrionLib:Destroy()
+        end
+    })
 end
 
 if currentGameID ~= suggestedGameID then
-	local WarningWindow = OrionLib:MakeWindow({Name = "Warning", HidePremium = false, SaveConfig = false, ConfigFolder = "GiggleHub-Warning"})
-	local WarningTab = WarningWindow:MakeTab({Name = "Warning", Icon = "rbxassetid://4483345998", PremiumOnly = false})
-	WarningTab:AddLabel("This script is made for the Game ID ")
-	WarningTab:AddLabel(suggestedGameID .. " but this isn't it.")
-	WarningTab:AddLabel("Do you want to continue anyway?")
-	WarningTab:AddButton({
-		Name = "Continue",
-		Callback = function()
-			createMainWindow()
-			WarningWindow:Destroy()
-		end
-	})
-	WarningTab:AddButton({
-		Name = "Cancel",
-		Callback = function()
-			OrionLib:Destroy()
-		end
-	})
+    local WarningWindow = OrionLib:MakeWindow({
+        Name = "Warning", 
+        HidePremium = false, 
+        SaveConfig = false, 
+        ConfigFolder = "GiggleHub-Warning"
+    })
+    local WarningTab = WarningWindow:MakeTab({
+        Name = "Warning", 
+        Icon = "rbxassetid://4483345998", 
+        PremiumOnly = false
+    })
+    WarningTab:AddLabel("This script is made for the Game ID ")
+    WarningTab:AddLabel(suggestedGameID .. " but this isn't it.")
+    WarningTab:AddLabel("Do you want to continue anyway?")
+    WarningTab:AddButton({
+        Name = "Continue",
+        Callback = function()
+            createMainWindow()
+            WarningWindow:Destroy()
+        end
+    })
+    WarningTab:AddButton({
+        Name = "Cancel",
+        Callback = function()
+            OrionLib:Destroy()
+        end
+    })
 else
-	createMainWindow()
+    createMainWindow()
 end
