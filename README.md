@@ -2,12 +2,14 @@
 
 A universal Roblox script hub built with Rayfield UI that dynamically loads scripts from this repository.
 
-## 🚀 Quick Start
+## 🚀 Quick Start with Ryzor Hub
 
 Execute this in your favorite Roblox executor:
 ```lua
-loadstring(game:HttpGet('https://raw.githubusercontent.com/Its3rr0rsWRLD/Ryzor/main/source'))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/Its3rr0rsWRLD/Ryzor/main/source.lua'))()
 ```
+
+> **Note:** This is the hub, not the miscellaneous scripts. The hub automatically detects the game you're playing and loads the appropriate scripts. Miscellaneous scripts can be found in the [scripts](https://github.com/Its3rr0rsWRLD/Ryzor/tree/main/scripts/misc/README.md) folder.
 
 ## ✨ Features
 
