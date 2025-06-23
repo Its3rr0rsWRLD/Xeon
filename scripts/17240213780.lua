@@ -1,50 +1,56 @@
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/jensonhirst/Orion/main/source')))()
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
 
 local suggestedGameID = 17240213780
 local currentGameID = game.PlaceId
-
 local debugMode = false
 
 function createMainWindow()
-	local Window = OrionLib:MakeWindow({Name = "GiggleHub | BlobEatingSim", HidePremium = false, SaveConfig = true, ConfigFolder = "GiggleHub-BlobEatingSim"})
-
-	local Tab = Window:MakeTab({
-		Name = "Menu",
-		Icon = "rbxassetid://4483345998",
-		PremiumOnly = false
+	local Window = Rayfield:CreateWindow({
+		Name = "Ryzor | BlobEatingSim",
+		LoadingTitle = "Ryzor Loading",
+		LoadingSubtitle = "Blob Eating Simulator",
+		Theme = "Amethyst",
+		ConfigurationSaving = {
+			Enabled = true,
+			FolderName = "Ryzor",
+			FileName = "BlobEatingSim"
+		},
+		Discord = {
+			Enabled = false,
+			Invite = "",
+			RememberJoins = true
+		},
+		KeySystem = false
 	})
 
-	local UpdateLog = Window:MakeTab({
-		Name = "Update Logs",
-		Icon = "rbxassetid://92064887636652",
-		PremiumOnly = false
-	})
+	local Tab = Window:CreateTab("Menu", "home")
+	local UpdateLog = Window:CreateTab("Update Logs", "scroll-text")
 
-	local Upd1 = UpdateLog:AddLabel("Blob Eatimg Simulator V1.0.4")
-	local Upd2 = UpdateLog:AddLabel("Added Safe Distance")
+	UpdateLog:CreateLabel("Blob Eating Simulator V1.0.4")
+	UpdateLog:CreateLabel("Added Safe Distance")
 
-	local Section = Tab:AddSection({Name = "Menu"})
+	local Section = Tab:CreateSection("Auto Farm")
 
 	local AutoFarmToggle = false
 	local EatKidsToggle = false
-	local SafeDistance = 0
+	local SafeDistance = 100
 
-	Tab:AddSlider({
+	Tab:CreateSlider({
 		Name = "Safe Distance",
-		Min = 0,
-		Max = 512,
-		Default = 100,
-		Color = Color3.fromRGB(255,255,255),
+		Range = {0, 512},
 		Increment = 1,
-		ValueName = "Studs",
+		Suffix = " Studs",
+		CurrentValue = 100,
+		Flag = "SafeDistance",
 		Callback = function(Value)
 			SafeDistance = Value
 		end
 	})
 
-	Tab:AddToggle({
+	Tab:CreateToggle({
 		Name = "Toggle Autofarm",
-		Default = false,
+		CurrentValue = false,
+		Flag = "AutoFarm",
 		Callback = function(Value)
 			AutoFarmToggle = Value
 			if AutoFarmToggle then
@@ -84,9 +90,10 @@ function createMainWindow()
 		end    
 	})
 
-	Tab:AddToggle({
+	Tab:CreateToggle({
 		Name = "Eat Kids",
-		Default = false,
+		CurrentValue = false,
+		Flag = "EatKids",
 		Callback = function(Value)
 			EatKidsToggle = Value
 			if EatKidsToggle then
@@ -117,31 +124,50 @@ function createMainWindow()
 		end
 	})
 
-	Tab:AddButton({
+	Tab:CreateButton({
 		Name = "Kill Script",
 		Callback = function()
-			OrionLib:Destroy()
+			Rayfield:Destroy()
 		end
 	})
 end
 
 if currentGameID ~= suggestedGameID then
-	local WarningWindow = OrionLib:MakeWindow({Name = "Warning", HidePremium = false, SaveConfig = false, ConfigFolder = "GiggleHub-Warning"})
-	local WarningTab = WarningWindow:MakeTab({Name = "Warning", Icon = "rbxassetid://4483345998", PremiumOnly = false})
-	WarningTab:AddLabel("This script is made for the Game ID ")
-	WarningTab:AddLabel(suggestedGameID .. " but this isn't it.")
-	WarningTab:AddLabel("Do you want to continue anyway?")
-	WarningTab:AddButton({
+	local WarningWindow = Rayfield:CreateWindow({
+		Name = "Warning",
+		LoadingTitle = "Warning",
+		LoadingSubtitle = "Game ID Mismatch",
+		Theme = "Amethyst",
+		ConfigurationSaving = {
+			Enabled = false,
+			FolderName = "",
+			FileName = ""
+		},
+		Discord = {
+			Enabled = false,
+			Invite = "",
+			RememberJoins = false
+		},
+		KeySystem = false
+	})
+	
+	local WarningTab = WarningWindow:CreateTab("Warning", "alert-triangle")
+	WarningTab:CreateLabel("This script is made for Game ID " .. suggestedGameID)
+	WarningTab:CreateLabel("Current Game ID: " .. currentGameID)
+	WarningTab:CreateLabel("Do you want to continue anyway?")
+	
+	WarningTab:CreateButton({
 		Name = "Continue",
 		Callback = function()
 			WarningWindow:Destroy()
 			createMainWindow()
 		end
 	})
-	WarningTab:AddButton({
+	
+	WarningTab:CreateButton({
 		Name = "Cancel",
 		Callback = function()
-			OrionLib:Destroy()
+			Rayfield:Destroy()
 		end
 	})
 else

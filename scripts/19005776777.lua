@@ -1,12 +1,10 @@
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/jensonhirst/Orion/main/source')))()
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
 
 local suggestedGameID = 19005776777
 local currentGameID = game.PlaceId
-
 local walkspeed = 16
-local spawnOffset = 16 -- Distance offset from food (used in autofarm)
+local spawnOffset = 16
 
--- Continuously reset the walkspeed since the game resets it periodically
 spawn(function()
     while true do
         local player = game.Players.LocalPlayer
@@ -22,46 +20,46 @@ spawn(function()
 end)
 
 function createMainWindow()
-    local Window = OrionLib:MakeWindow({
-        Name = "GiggleHub | Pyramid Eaters", 
-        HidePremium = false, 
-        SaveConfig = true, 
-        ConfigFolder = "GiggleHub-BlobEatingSim"
+    local Window = Rayfield:CreateWindow({
+        Name = "Ryzor | Pyramid Eaters",
+        LoadingTitle = "Ryzor Loading",
+        LoadingSubtitle = "Pyramid Eaters",
+        Theme = "Amethyst",
+        ConfigurationSaving = {
+            Enabled = true,
+            FolderName = "Ryzor",
+            FileName = "PyramidEaters"
+        },
+        Discord = {
+            Enabled = false,
+            Invite = "",
+            RememberJoins = true
+        },
+        KeySystem = false
     })
 
-    local Tab = Window:MakeTab({
-        Name = "Menu",
-        Icon = "rbxassetid://4483345998",
-        PremiumOnly = false
-    })
+    local Tab = Window:CreateTab("Menu", "home")
+    Tab:CreateSection("Settings")
 
-    Tab:AddSection({
-        Name = "Menu"
-    })
-
-    -- Walkspeed slider
-    Tab:AddSlider({
+    Tab:CreateSlider({
         Name = "Walkspeed",
-        Min = 16,
-        Max = 500,
-        Default = walkspeed,
-        Color = Color3.fromRGB(255, 255, 255),
+        Range = {16, 500},
         Increment = 1,
-        ValueName = "Walkspeed",
+        Suffix = " WS",
+        CurrentValue = walkspeed,
+        Flag = "Walkspeed",
         Callback = function(Value)
             walkspeed = Value
         end    
     })
     
-    -- Spawn offset slider (for the autofarm food teleportation)
-    Tab:AddSlider({
+    Tab:CreateSlider({
         Name = "Spawn Offset (Studs)",
-        Min = 0,
-        Max = 100,
-        Default = spawnOffset,
-        Color = Color3.fromRGB(255, 255, 255),
+        Range = {0, 100},
         Increment = 1,
-        ValueName = "Offset",
+        Suffix = " Offset",
+        CurrentValue = spawnOffset,
+        Flag = "SpawnOffset",
         Callback = function(Value)
             spawnOffset = Value
         end    
@@ -69,9 +67,10 @@ function createMainWindow()
 
     local AutoFarmToggle = false
 
-    Tab:AddToggle({
+    Tab:CreateToggle({
         Name = "Toggle Autofarm",
-        Default = false,
+        CurrentValue = false,
+        Flag = "AutoFarm",
         Callback = function(Value)
             AutoFarmToggle = Value
             if AutoFarmToggle then
@@ -86,7 +85,6 @@ function createMainWindow()
                         local closestDistance = math.huge
                         local characterPos = character.PrimaryPart and character.PrimaryPart.Position or Vector3.new(0, 0, 0)
 
-                        -- Find the closest food by comparing distances
                         for _, food in pairs(foodFolder:GetChildren()) do
                             if food:IsA("Model") and food:FindFirstChild("Hitbox") and food.Hitbox:IsA("BasePart") then
                                 local distance = (food.Hitbox.Position - characterPos).Magnitude
@@ -98,7 +96,6 @@ function createMainWindow()
                         end
 
                         if closestFood then
-                            -- Teleport to a point offset from the food's Hitbox by the user-specified number of studs
                             local offsetCFrame = closestFood.Hitbox.CFrame * CFrame.new(0, 0, spawnOffset)
                             character:SetPrimaryPartCFrame(offsetCFrame)
                             humanoid:MoveTo(closestFood.Hitbox.Position)
@@ -114,10 +111,10 @@ function createMainWindow()
 
     local EatOthersToggle = false
 
-    -- New toggle to Eat Others: Teleport to players with a smaller Size value
-    Tab:AddToggle({
+    Tab:CreateToggle({
         Name = "Eat Others",
-        Default = false,
+        CurrentValue = false,
+        Flag = "EatOthers",
         Callback = function(Value)
             EatOthersToggle = Value
             if EatOthersToggle then
@@ -139,7 +136,6 @@ function createMainWindow()
                                     theirSize = theirLeaderstats.Size.Value
                                 end
                                 if theirSize < mySize then
-                                    -- Teleport the local character to the target player's character
                                     local targetCharacter = player.Character
                                     if targetCharacter and targetCharacter.PrimaryPart then
                                         localCharacter:SetPrimaryPartCFrame(targetCharacter.PrimaryPart.CFrame)
@@ -156,40 +152,50 @@ function createMainWindow()
         end
     })
 
-    Tab:AddButton({
+    Tab:CreateButton({
         Name = "Kill Script",
         Callback = function()
-            OrionLib:Destroy()
+            Rayfield:Destroy()
         end
     })
 end
 
 if currentGameID ~= suggestedGameID then
-    local WarningWindow = OrionLib:MakeWindow({
-        Name = "Warning", 
-        HidePremium = false, 
-        SaveConfig = false, 
-        ConfigFolder = "GiggleHub-Warning"
+    local WarningWindow = Rayfield:CreateWindow({
+        Name = "Warning",
+        LoadingTitle = "Warning",
+        LoadingSubtitle = "Game ID Mismatch",
+        Theme = "Amethyst",
+        ConfigurationSaving = {
+            Enabled = false,
+            FolderName = "",
+            FileName = ""
+        },
+        Discord = {
+            Enabled = false,
+            Invite = "",
+            RememberJoins = false
+        },
+        KeySystem = false
     })
-    local WarningTab = WarningWindow:MakeTab({
-        Name = "Warning", 
-        Icon = "rbxassetid://4483345998", 
-        PremiumOnly = false
-    })
-    WarningTab:AddLabel("This script is made for the Game ID ")
-    WarningTab:AddLabel(suggestedGameID .. " but this isn't it.")
-    WarningTab:AddLabel("Do you want to continue anyway?")
-    WarningTab:AddButton({
+    
+    local WarningTab = WarningWindow:CreateTab("Warning", "alert-triangle")
+    WarningTab:CreateLabel("This script is made for Game ID " .. suggestedGameID)
+    WarningTab:CreateLabel("Current Game ID: " .. currentGameID)
+    WarningTab:CreateLabel("Do you want to continue anyway?")
+    
+    WarningTab:CreateButton({
         Name = "Continue",
         Callback = function()
             createMainWindow()
             WarningWindow:Destroy()
         end
     })
-    WarningTab:AddButton({
+    
+    WarningTab:CreateButton({
         Name = "Cancel",
         Callback = function()
-            OrionLib:Destroy()
+            Rayfield:Destroy()
         end
     })
 else

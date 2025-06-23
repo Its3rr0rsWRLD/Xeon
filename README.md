@@ -1,19 +1,46 @@
-# GiggleHub
-## What is it?
-It's a hub. For scripts. Duh. The name is random :3
+# 🎭 Ryzor
 
-## Supported Games
-- https://www.roblox.com/games/17240213780/Blob-Eating-Simulator
-- https://www.roblox.com/games/19005776777/Pyramid-Eaters
-- https://www.roblox.com/games/16426855766/Eat-Pizza-Simulator
+A universal Roblox script hub built with Rayfield UI that dynamically loads scripts from this repository.
 
-## Running the script
-Paste `loadstring(game:HttpGet('https://raw.githubusercontent.com/Its3rr0rsWRLD/GiggleHub/main/source'))()`
+## 🚀 Quick Start
 
-## Recommended Executor
-![celery](https://github.com/user-attachments/assets/24e073c8-6ea0-43d9-a975-27166e33a5e8)
+Execute this in your favorite Roblox executor:
+```lua
+loadstring(game:HttpGet('https://raw.githubusercontent.com/Its3rr0rsWRLD/Ryzor/main/source'))()
+```
 
-This is the executor I personally use, it has lots of users, works great, and I haven't seen anything suspicious. 
-It's also the first executor I have personally used that doesn't get flagged by my (strict) antivirus when running (Kaspersky)
+## ✨ Features
 
-https://discord.gg/celery
+- **Dynamic Script Loading** - Automatically scans the repository for available game scripts
+- **Modern UI** - Clean Rayfield interface with organized tabs and categories  
+- **Game Detection** - Shows scripts available for your current game
+- **Universal Tools** - Anti-AFK and other cross-game utilities
+- **Easy Navigation** - Browse all supported games with search and categorization
+
+## 🎮 Currently Supported Games
+
+The hub automatically loads scripts for these games:
+- Blob Eating Simulator (17240213780)
+- Pyramid Eaters (19005776777) 
+- Eat Pizza Simulator (16426855766)
+- And more...
+
+*Scripts are added regularly - the hub will show newly supported games automatically*
+
+## 🛠️ How It Works
+
+1. **Current Game Tab** - Shows scripts available for the game you're currently playing
+2. **All Games Tab** - Browse all supported games, organized by category
+3. **Ryzor Hub** - Universal tools that work across multiple games
+4. **Settings** - Customize themes and hub behavior
+
+## 📝 Notes
+
+- All scripts use modern Rayfield UI for consistency
+- Game ID validation prevents scripts from running on wrong games
+- Repository structure allows easy addition of new game scripts
+- No external dependencies beyond Rayfield UI library
+
+---
+
+*Made with ❤️ by Its3rr0rsWRLD*
