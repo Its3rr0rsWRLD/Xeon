@@ -23,7 +23,8 @@ local AimbotSettings = {
     AimPart = "Head",
     Smoothness = 0.2,
     MaxDistance = 1000,
-    TriggerKey = "MouseButton2"
+    TriggerKey = "MouseButton2",
+    WallCheck = true
 }
 
 local Players = game:GetService("Players")
@@ -272,6 +273,69 @@ local function updateESP()
     end
 end
 
+local function isTargetVisible(target)
+    if not AimbotSettings.WallCheck then
+        return true
+    end
+    
+    if not target or not target.Character or not target.Character:FindFirstChild(AimbotSettings.AimPart) then
+        return false
+    end
+    
+    local aimPart = target.Character[AimbotSettings.AimPart]
+    local camera = workspace.CurrentCamera
+    local startPos = camera.CFrame.Position
+    local endPos = aimPart.Position
+    local direction = (endPos - startPos)
+    
+    -- Create a more comprehensive filter list
+    local filterList = {LocalPlayer.Character}
+    
+    -- Add target character parts to filter (so we can hit them)
+    if target.Character then
+        for _, part in pairs(target.Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                table.insert(filterList, part)
+            end
+        end
+        -- Add accessories and tools
+        for _, accessory in pairs(target.Character:GetChildren()) do
+            if accessory:IsA("Accessory") and accessory:FindFirstChild("Handle") then
+                table.insert(filterList, accessory.Handle)
+            elseif accessory:IsA("Tool") and accessory:FindFirstChild("Handle") then
+                table.insert(filterList, accessory.Handle)
+            end
+        end
+    end
+    
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+    raycastParams.FilterDescendantsInstances = filterList
+    raycastParams.IgnoreWater = true
+    
+    local raycastResult = workspace:Raycast(startPos, direction, raycastParams)
+    
+    -- If no obstruction found, target is visible
+    if not raycastResult then
+        return true
+    end
+    
+    -- Check if the hit part is part of the target or something we should ignore
+    local hitPart = raycastResult.Instance
+    local hitParent = hitPart.Parent
+    
+    -- Check various parent hierarchies for the target character
+    while hitParent and hitParent ~= workspace do
+        if hitParent == target.Character then
+            return true
+        end
+        hitParent = hitParent.Parent
+    end
+    
+    -- If we hit something that's not the target, they're behind a wall
+    return false
+end
+
 local function getClosestTarget()
     local closest = nil
     local closestDistance = math.huge
@@ -283,11 +347,10 @@ local function getClosestTarget()
             if humanoid and aimPart and humanoid.Health > 0 then
                 if not AimbotSettings.TeamCheck or isEnemy(player) then
                     local screenPos, onScreen = worldToScreen(aimPart.Position)
-                    local distance3D = getDistance(Camera.CFrame.Position, aimPart.Position)
-                    if onScreen and distance3D <= AimbotSettings.MaxDistance then
+                    local distance3D = getDistance(Camera.CFrame.Position, aimPart.Position)                    if onScreen and distance3D <= AimbotSettings.MaxDistance then
                         local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
                         local screenDistance = getDistance(Vector3.new(screenPos.X, screenPos.Y, 0), Vector3.new(screenCenter.X, screenCenter.Y, 0))
-                        if screenDistance <= AimbotSettings.FOV and screenDistance < closestDistance then
+                        if screenDistance <= AimbotSettings.FOV and screenDistance < closestDistance and isTargetVisible(player) then
                             closest = player
                             closestDistance = screenDistance
                         end
@@ -381,13 +444,12 @@ local function startAimbot()
         if AimbotSettings.Enabled and IsAiming then
             if not TargetLocked then
                 TargetLocked = getClosestTarget()
-            end
-            if TargetLocked then
+            end            if TargetLocked then
                 if TargetLocked.Character and TargetLocked.Character:FindFirstChild(AimbotSettings.AimPart) and TargetLocked.Character:FindFirstChild("Humanoid") and TargetLocked.Character.Humanoid.Health > 0 then
                     local screenPos, onScreen = worldToScreen(TargetLocked.Character[AimbotSettings.AimPart].Position)
                     local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
                     local screenDistance = getDistance(Vector3.new(screenPos.X, screenPos.Y, 0), Vector3.new(screenCenter.X, screenCenter.Y, 0))
-                    if onScreen and screenDistance <= AimbotSettings.FOV then
+                    if onScreen and screenDistance <= AimbotSettings.FOV and isTargetVisible(TargetLocked) then
                         aimAt(TargetLocked)
                     else
                         TargetLocked = nil
@@ -503,6 +565,12 @@ AimbotTab:CreateToggle({
     CurrentValue = AimbotSettings.TeamCheck,
     Flag = "AimbotTeamCheck",
     Callback = function(Value) AimbotSettings.TeamCheck = Value end
+})
+AimbotTab:CreateToggle({
+    Name = "Wall Check",
+    CurrentValue = AimbotSettings.WallCheck,
+    Flag = "AimbotWallCheck",
+    Callback = function(Value) AimbotSettings.WallCheck = Value end
 })
 AimbotTab:CreateDropdown({
     Name = "Aim Part",
@@ -644,5 +712,221 @@ UtilityTab:CreateButton({
             pcall(function() getgenv().Rayfield = nil end)
         end
         collectgarbage("collect")
+    end
+})
+
+local MiscTab = Window:CreateTab("Misc", "list")
+MiscTab:CreateSection("Server Management")
+MiscTab:CreateButton({
+    Name = "Rejoin Server",
+    Callback = function()
+        local TeleportService = game:GetService("TeleportService")
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+    end
+})
+MiscTab:CreateButton({
+    Name = "Server Hop (Find New Server)",
+    Callback = function()
+        local TeleportService = game:GetService("TeleportService")
+        local HttpService = game:GetService("HttpService")
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        
+        local success, result = pcall(function()
+            local servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+            
+            local availableServers = {}
+            for _, server in pairs(servers.data) do
+                if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                    table.insert(availableServers, server.id)
+                end
+            end
+            
+            if #availableServers > 0 then
+                local randomServer = availableServers[math.random(1, #availableServers)]
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServer, LocalPlayer)
+            else
+                Rayfield:Notify({
+                    Title = "Server Hop",
+                    Content = "No available servers found!",
+                    Duration = 3,
+                    Image = "alert-triangle"
+                })
+            end
+        end)
+        
+        if not success then
+            Rayfield:Notify({
+                Title = "Server Hop",
+                Content = "Failed to find servers. Rejoining current server...",
+                Duration = 3,
+                Image = "alert-triangle"
+            })
+            TeleportService:Teleport(game.PlaceId, LocalPlayer)
+        end
+    end
+})
+MiscTab:CreateButton({
+    Name = "Copy Job ID",
+    Callback = function()
+        if setclipboard then
+            setclipboard(game.JobId)
+            Rayfield:Notify({
+                Title = "Job ID",
+                Content = "Copied to clipboard: " .. game.JobId,
+                Duration = 3,
+                Image = "clipboard"
+            })
+        else
+            Rayfield:Notify({
+                Title = "Job ID",
+                Content = "Your executor doesn't support clipboard. Job ID: " .. game.JobId,
+                Duration = 5,
+                Image = "alert-triangle"
+            })
+        end
+    end
+})
+
+MiscTab:CreateSection("Server Information")
+MiscTab:CreateButton({
+    Name = "Show Server Info",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+        
+        local playerCount = #Players:GetPlayers()
+        local maxPlayers = Players.MaxPlayers
+        local ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())
+        local fps = math.floor(1 / RunService.Heartbeat:Wait())
+        local gameId = game.PlaceId
+        local jobId = game.JobId
+        
+        Rayfield:Notify({
+            Title = "Server Information",
+            Content = string.format("Players: %d/%d\nPing: %dms\nFPS: %d\nGame ID: %s", 
+                playerCount, maxPlayers, ping, fps, tostring(gameId)),
+            Duration = 6,
+            Image = "info"
+        })
+    end
+})
+
+MiscTab:CreateSection("Player Utilities")
+MiscTab:CreateButton({
+    Name = "List All Players",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local playerList = {}
+        
+        for _, player in pairs(Players:GetPlayers()) do
+            table.insert(playerList, player.Name)
+        end
+        
+        local playerString = table.concat(playerList, ", ")
+        
+        if setclipboard then
+            setclipboard(playerString)
+            Rayfield:Notify({
+                Title = "Player List",
+                Content = "Copied " .. #playerList .. " players to clipboard",
+                Duration = 3,
+                Image = "users"
+            })
+        else
+            Rayfield:Notify({
+                Title = "Player List",
+                Content = "Players (" .. #playerList .. "): " .. (string.len(playerString) > 100 and string.sub(playerString, 1, 100) .. "..." or playerString),
+                Duration = 5,
+                Image = "users"
+            })
+        end
+    end
+})
+MiscTab:CreateButton({
+    Name = "Clear Chat (Client-Side)",
+    Callback = function()
+        local StarterGui = game:GetService("StarterGui")
+        
+        pcall(function()
+            StarterGui:SetCore("ChatMakeSystemMessage", {
+                Text = string.rep("\n", 100);
+                Font = Enum.Font.Gotham;
+                Color = Color3.fromRGB(255, 255, 255);
+                FontSize = Enum.FontSize.Size14;
+            })
+        end)
+        
+        Rayfield:Notify({
+            Title = "Chat Cleared",
+            Content = "Chat has been cleared (client-side only)",
+            Duration = 2,
+            Image = "message-square"
+        })
+    end
+})
+
+MiscTab:CreateSection("Performance")
+MiscTab:CreateButton({
+    Name = "Reduce Graphics (Boost FPS)",
+    Callback = function()
+        local Lighting = game:GetService("Lighting")
+        local Terrain = workspace.Terrain
+        
+        pcall(function()
+            -- Reduce lighting quality
+            Lighting.GlobalShadows = false
+            Lighting.FogEnd = 9e9
+            Lighting.Brightness = 0
+            
+            -- Reduce terrain quality
+            Terrain.WaterWaveSize = 0
+            Terrain.WaterWaveSpeed = 0
+            Terrain.WaterReflectance = 0
+            Terrain.WaterTransparency = 0
+            
+            -- Reduce rendering settings
+            settings().Rendering.QualityLevel = 1
+            settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level04
+        end)
+        
+        Rayfield:Notify({
+            Title = "Graphics Reduced",
+            Content = "Graphics settings lowered for better FPS",
+            Duration = 3,
+            Image = "zap"
+        })
+    end
+})
+MiscTab:CreateButton({
+    Name = "Anti-Lag (Remove Unnecessary Objects)",
+    Callback = function()
+        local removed = 0
+        
+        pcall(function()
+            -- Remove terrain decorations
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj:IsA("Decal") or obj:IsA("Texture") or obj:IsA("SurfaceGui") then
+                    obj:Destroy()
+                    removed = removed + 1
+                elseif obj:IsA("ParticleEmitter") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
+                    obj:Destroy()
+                    removed = removed + 1
+                elseif obj:IsA("Explosion") or obj:IsA("Sound") then
+                    obj:Destroy()
+                    removed = removed + 1
+                end
+            end
+        end)
+        
+        Rayfield:Notify({
+            Title = "Anti-Lag Complete",
+            Content = "Removed " .. removed .. " unnecessary objects",
+            Duration = 3,
+            Image = "trash-2"
+        })
     end
 })
