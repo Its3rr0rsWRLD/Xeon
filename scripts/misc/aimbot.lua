@@ -294,6 +294,7 @@ local function getClosestTarget()
                     end
                 end
             end
+        end
     end
     return closest
 end
@@ -608,8 +609,7 @@ UtilityTab:CreateButton({
             end
         end
         ESPObjects = {}
-        if FOVCircle and FOVCircle.Remove then
-            pcall(function() FOVCircle:Remove() end)
+        if FOVCircle and FOVCircle.Remove then            pcall(function() FOVCircle:Remove() end)
             FOVCircle = nil
         end
         if Rayfield and Rayfield.Destroy then
