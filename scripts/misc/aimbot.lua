@@ -1,4 +1,4 @@
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/ae2c7a0513351212d06e5f001a8099af8fb4dafb/source.lua'))()
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/Its3rr0rsWRLD/Rayfield/refs/heads/main/source.lua'))()
 
 local ESPSettings = {
     Enabled = false,
@@ -6,6 +6,7 @@ local ESPSettings = {
     ShowBoxes = true,
     ShowTracers = false,
     ShowHealth = false,
+    ShowHighlight = true,
     TeamCheck = false,
     Color = Color3.fromRGB(255,255,255),
     EnemyColor = Color3.fromRGB(255,0,0),
@@ -39,9 +40,6 @@ local ESPConnection = nil
 local InputConnection = nil
 local IsAiming = false
 local TargetLocked = nil
-
-local ESPThemes = {"Classic", "Rounded", "Modern"}
-ESPSettings.Theme = ESPSettings.Theme or "Classic"
 
 local function getTeamColor(player)
     if player.Team and player.TeamColor then
@@ -78,9 +76,7 @@ end
 
 local function createESP(player)
     if ESPObjects[player] then return end
-    
     ESPObjects[player] = {}
-    
     local box = Drawing.new("Square")
     box.Visible = false
     box.Color = ESPSettings.Color
@@ -88,14 +84,26 @@ local function createESP(player)
     box.Filled = false
     box.Transparency = 1
     ESPObjects[player].Box = box
-    
+    local healthBarBg = Drawing.new("Square")
+    healthBarBg.Visible = false
+    healthBarBg.Color = Color3.fromRGB(20, 20, 20)
+    healthBarBg.Thickness = 1
+    healthBarBg.Filled = true
+    healthBarBg.Transparency = 0.8
+    ESPObjects[player].HealthBarBg = healthBarBg
+    local healthBar = Drawing.new("Square")
+    healthBar.Visible = false
+    healthBar.Color = Color3.fromRGB(0, 255, 0)
+    healthBar.Thickness = 1
+    healthBar.Filled = true
+    healthBar.Transparency = 1
+    ESPObjects[player].HealthBar = healthBar
     local tracer = Drawing.new("Line")
     tracer.Visible = false
     tracer.Color = ESPSettings.Color
     tracer.Thickness = 1
     tracer.Transparency = 1
     ESPObjects[player].Tracer = tracer
-    
     local name = Drawing.new("Text")
     name.Visible = false
     name.Color = ESPSettings.Color
@@ -106,7 +114,16 @@ local function createESP(player)
     name.Font = Drawing.Fonts.UI
     name.Transparency = 1
     ESPObjects[player].Name = name
-    
+    local distanceText = Drawing.new("Text")
+    distanceText.Visible = false
+    distanceText.Color = Color3.fromRGB(200, 200, 200)
+    distanceText.Size = 12
+    distanceText.Center = true
+    distanceText.Outline = true
+    distanceText.OutlineColor = Color3.fromRGB(0, 0, 0)
+    distanceText.Font = Drawing.Fonts.UI
+    distanceText.Transparency = 1
+    ESPObjects[player].DistanceText = distanceText
     local healthText = Drawing.new("Text")
     healthText.Visible = false
     healthText.Color = ESPSettings.Color
@@ -123,7 +140,7 @@ local function removeESP(player)
     if ESPObjects[player] then
         for _, obj in pairs(ESPObjects[player]) do
             if obj.Remove then 
-                obj:Remove() 
+                obj:Remove()
             end
         end
         ESPObjects[player] = nil
@@ -146,10 +163,7 @@ local function updateESP()
             if not ESPObjects[player] then 
                 createESP(player) 
             end
-            local box = ESPObjects[player].Box
-            local tracer = ESPObjects[player].Tracer
-            local name = ESPObjects[player].Name
-            local healthText = ESPObjects[player].HealthText
+            local espData = ESPObjects[player]
             local char = player.Character
             local hrp = char.HumanoidRootPart
             local head = char.Head
@@ -159,7 +173,7 @@ local function updateESP()
                 local isEnemyPlayer = isEnemy(player)
                 local color = isEnemyPlayer and ESPSettings.EnemyColor or ESPSettings.AllyColor
                 if ESPSettings.TeamCheck and not isEnemyPlayer then
-                    for _, obj in pairs(ESPObjects[player]) do
+                    for _, obj in pairs(espData) do
                         obj.Visible = false
                     end
                 else
@@ -169,63 +183,86 @@ local function updateESP()
                     if onScreen then
                         local boxHeight = math.abs(headPos.Y - footPos.Y)
                         local boxWidth = boxHeight * 0.6
-                        -- THEME HANDLING
+                        local healthPercent = humanoid.Health / humanoid.MaxHealth
                         if ESPSettings.ShowBoxes then
-                            box.Visible = true
-                            box.Color = color
-                            box.Size = Vector2.new(boxWidth, boxHeight)
-                            box.Position = Vector2.new(screenPos.X - boxWidth/2, headPos.Y)
-                            if ESPSettings.Theme == "Classic" then
-                                box.Thickness = 2
-                                box.Filled = false
-                                box.Radius = 0
-                            elseif ESPSettings.Theme == "Rounded" then
-                                box.Thickness = 2
-                                box.Filled = false
-                                box.Radius = math.floor(boxWidth/6)
-                            elseif ESPSettings.Theme == "Modern" then
-                                box.Thickness = 3
-                                box.Filled = false
-                                box.Radius = math.floor(boxWidth/3)
-                            end
+                            espData.Box.Visible = true
+                            espData.Box.Color = color
+                            espData.Box.Size = Vector2.new(boxWidth, boxHeight)
+                            espData.Box.Position = Vector2.new(screenPos.X - boxWidth/2, headPos.Y)
+                            espData.Box.Thickness = 2
+                            espData.Box.Transparency = 1
                         else
-                            box.Visible = false
-                        end
-                        if ESPSettings.ShowTracers then
-                            tracer.Visible = true
-                            tracer.Color = color
-                            tracer.Thickness = ESPSettings.Theme == "Modern" and 2 or 1
-                            tracer.From = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y)
-                            tracer.To = Vector2.new(screenPos.X, footPos.Y)
-                        else
-                            tracer.Visible = false
-                        end
-                        if ESPSettings.ShowNames then
-                            name.Visible = true
-                            name.Color = color
-                            name.Text = player.Name
-                            name.Position = Vector2.new(screenPos.X, headPos.Y - 20)
-                            name.Size = ESPSettings.Theme == "Modern" and 18 or 16
-                        else
-                            name.Visible = false
+                            espData.Box.Visible = false
                         end
                         if ESPSettings.ShowHealth then
-                            healthText.Visible = true
-                            healthText.Color = Color3.fromRGB(255 - math.floor(humanoid.Health/100 * 255), math.floor(humanoid.Health/100 * 255), 0)
-                            healthText.Text = "[" .. math.floor(humanoid.Health) .. "/" .. math.floor(humanoid.MaxHealth) .. "]"
-                            healthText.Position = Vector2.new(screenPos.X, footPos.Y + 5)
-                            healthText.Size = ESPSettings.Theme == "Modern" and 16 or 14
+                            local barWidth = boxWidth * 0.8
+                            local barHeight = 4
+                            local barX = screenPos.X - barWidth/2
+                            local barY = footPos.Y + 8
+                            espData.HealthBarBg.Visible = true
+                            espData.HealthBarBg.Size = Vector2.new(barWidth, barHeight)
+                            espData.HealthBarBg.Position = Vector2.new(barX, barY)
+                            espData.HealthBarBg.Color = Color3.fromRGB(20, 20, 20)
+                            espData.HealthBarBg.Transparency = 0.8
+                            espData.HealthBar.Visible = true
+                            espData.HealthBar.Size = Vector2.new(barWidth * healthPercent, barHeight)
+                            espData.HealthBar.Position = Vector2.new(barX, barY)
+                            espData.HealthBar.Transparency = 1
+                            if healthPercent > 0.6 then
+                                espData.HealthBar.Color = Color3.fromRGB(0, 255, 0)
+                            elseif healthPercent > 0.3 then
+                                espData.HealthBar.Color = Color3.fromRGB(255, 255, 0)
+                            else
+                                espData.HealthBar.Color = Color3.fromRGB(255, 0, 0)
+                            end
+                            espData.HealthText.Visible = true
+                            espData.HealthText.Text = math.floor(humanoid.Health) .. "HP"
+                            espData.HealthText.Position = Vector2.new(screenPos.X, barY + barHeight + 12)
+                            espData.HealthText.Color = espData.HealthBar.Color
+                            espData.HealthText.Size = 14
+                            espData.HealthText.Transparency = 1
                         else
-                            healthText.Visible = false
+                            espData.HealthBarBg.Visible = false
+                            espData.HealthBar.Visible = false
+                            espData.HealthText.Visible = false
+                        end
+                        if ESPSettings.ShowTracers then
+                            espData.Tracer.Visible = true
+                            espData.Tracer.Color = color
+                            espData.Tracer.From = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y)
+                            espData.Tracer.To = Vector2.new(screenPos.X, footPos.Y)
+                            espData.Tracer.Thickness = 2
+                            espData.Tracer.Transparency = 1
+                        else
+                            espData.Tracer.Visible = false
+                        end
+                        if ESPSettings.ShowNames then
+                            espData.Name.Visible = true
+                            espData.Name.Color = color
+                            espData.Name.Text = player.Name
+                            espData.Name.Position = Vector2.new(screenPos.X, headPos.Y - 25)
+                            espData.Name.Size = 16
+                            espData.Name.Outline = true
+                            espData.Name.OutlineColor = Color3.fromRGB(0, 0, 0)
+                            espData.Name.Transparency = 1
+                            espData.DistanceText.Visible = true
+                            espData.DistanceText.Text = "[" .. math.floor(distance) .. "m]"
+                            espData.DistanceText.Position = Vector2.new(screenPos.X, headPos.Y - 8)
+                            espData.DistanceText.Color = Color3.fromRGB(200, 200, 200)
+                            espData.DistanceText.Size = 12
+                            espData.DistanceText.Transparency = 1
+                        else
+                            espData.Name.Visible = false
+                            espData.DistanceText.Visible = false
                         end
                     else
-                        for _, obj in pairs(ESPObjects[player]) do
+                        for _, obj in pairs(espData) do
                             obj.Visible = false
                         end
                     end
                 end
             else
-                for _, obj in pairs(ESPObjects[player]) do
+                for _, obj in pairs(espData) do
                     obj.Visible = false
                 end
             end
@@ -238,22 +275,18 @@ end
 local function getClosestTarget()
     local closest = nil
     local closestDistance = math.huge
-    
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character then
             local character = player.Character
             local humanoid = character:FindFirstChild("Humanoid")
             local aimPart = character:FindFirstChild(AimbotSettings.AimPart)
-            
             if humanoid and aimPart and humanoid.Health > 0 then
                 if not AimbotSettings.TeamCheck or isEnemy(player) then
                     local screenPos, onScreen = worldToScreen(aimPart.Position)
                     local distance3D = getDistance(Camera.CFrame.Position, aimPart.Position)
-                    
                     if onScreen and distance3D <= AimbotSettings.MaxDistance then
                         local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
                         local screenDistance = getDistance(Vector3.new(screenPos.X, screenPos.Y, 0), Vector3.new(screenCenter.X, screenCenter.Y, 0))
-                        
                         if screenDistance <= AimbotSettings.FOV and screenDistance < closestDistance then
                             closest = player
                             closestDistance = screenDistance
@@ -261,9 +294,7 @@ local function getClosestTarget()
                     end
                 end
             end
-        end
     end
-    
     return closest
 end
 
@@ -271,7 +302,6 @@ local function aimAt(target)
     if not target or not target.Character or not target.Character:FindFirstChild(AimbotSettings.AimPart) then 
         return 
     end
-    
     local aimPart = target.Character[AimbotSettings.AimPart]
     local targetPosition = aimPart.Position
     local smoothness = math.clamp(AimbotSettings.Smoothness, 0.01, 0.5)
@@ -306,11 +336,9 @@ local function updateFOV()
         if not FOVCircle then
             createFOVCircle()
         end
-        
         FOVCircle.Visible = true
         FOVCircle.Radius = AimbotSettings.FOV
         FOVCircle.Position = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
-        
         if TargetLocked then
             FOVCircle.Color = Color3.fromRGB(255, 0, 0)
         else
@@ -325,7 +353,6 @@ end
 
 local function handleInput(input, processed)
     if processed then return end
-    
     if input.UserInputType.Name == AimbotSettings.TriggerKey then
         IsAiming = true
     end
@@ -333,7 +360,6 @@ end
 
 local function handleInputEnd(input, processed)
     if processed then return end
-    
     if input.UserInputType.Name == AimbotSettings.TriggerKey then
         IsAiming = false
         TargetLocked = nil
@@ -347,24 +373,19 @@ local function startAimbot()
     if InputConnection then
         InputConnection:Disconnect()
     end
-    
     InputConnection = UserInputService.InputBegan:Connect(handleInput)
     UserInputService.InputEnded:Connect(handleInputEnd)
-    
     AimbotConnection = RunService.Heartbeat:Connect(function()
         updateFOV()
-        
         if AimbotSettings.Enabled and IsAiming then
             if not TargetLocked then
                 TargetLocked = getClosestTarget()
             end
-            
             if TargetLocked then
                 if TargetLocked.Character and TargetLocked.Character:FindFirstChild(AimbotSettings.AimPart) and TargetLocked.Character:FindFirstChild("Humanoid") and TargetLocked.Character.Humanoid.Health > 0 then
                     local screenPos, onScreen = worldToScreen(TargetLocked.Character[AimbotSettings.AimPart].Position)
                     local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
                     local screenDistance = getDistance(Vector3.new(screenPos.X, screenPos.Y, 0), Vector3.new(screenCenter.X, screenCenter.Y, 0))
-                    
                     if onScreen and screenDistance <= AimbotSettings.FOV then
                         aimAt(TargetLocked)
                     else
@@ -384,7 +405,6 @@ local function startESP()
     if ESPConnection then
         ESPConnection:Disconnect()
     end
-    
     ESPConnection = RunService.Heartbeat:Connect(function()
         updateESP()
     end)
@@ -415,18 +435,8 @@ local Window = Rayfield:CreateWindow({
     KeySystem = false
 })
 
--- ESP Tab
 local ESPTab = Window:CreateTab("ESP", "eye")
 ESPTab:CreateSection("ESP Settings")
-ESPTab:CreateDropdown({
-    Name = "ESP Theme",
-    Options = ESPThemes,
-    CurrentOption = ESPSettings.Theme,
-    Flag = "ESPTheme",
-    Callback = function(Value)
-        ESPSettings.Theme = Value
-    end
-})
 ESPTab:CreateToggle({
     Name = "Enable ESP",
     CurrentValue = ESPSettings.Enabled,
@@ -467,7 +477,6 @@ ESPTab:CreateSlider({
     Callback = function(Value) ESPSettings.MaxDistance = Value end
 })
 
--- Aimbot Tab
 local AimbotTab = Window:CreateTab("Aimbot", "crosshair")
 AimbotTab:CreateSection("Aimbot Settings")
 AimbotTab:CreateToggle({
@@ -525,7 +534,6 @@ AimbotTab:CreateSlider({
     CurrentValue = AimbotSettings.Smoothness,
     Flag = "AimbotSmooth",
     Callback = function(Value)
-        -- Value is from 0 to 0.5, direct mapping
         local smooth = math.clamp(Value, 0.01, 0.5)
         AimbotSettings.Smoothness = smooth
     end
@@ -540,7 +548,6 @@ AimbotTab:CreateSlider({
     Callback = function(Value) AimbotSettings.MaxDistance = Value end
 })
 
--- Utility Tab
 local UtilityTab = Window:CreateTab("Utility", "settings")
 UtilityTab:CreateSection("Script Control")
 UtilityTab:CreateButton({
@@ -564,12 +571,10 @@ UtilityTab:CreateButton({
                 end
             end
         end
-        ESPObjects = {}
-        if FOVCircle and FOVCircle.Remove then
+        ESPObjects = {}        if FOVCircle and FOVCircle.Remove then
             FOVCircle:Remove()
         end
-        Window:Destroy()
-        -- Unload the script from memory (best effort)
+        Rayfield:Destroy()
         if getgenv then
             getgenv().RyzorAimbotLoaded = nil
         end
@@ -607,10 +612,9 @@ UtilityTab:CreateButton({
             pcall(function() FOVCircle:Remove() end)
             FOVCircle = nil
         end
-        if Window and Window.Destroy then
-            pcall(function() Window:Destroy() end)
+        if Rayfield and Rayfield.Destroy then
+            pcall(function() Rayfield:Destroy() end)
         end
-        -- Hard unload: clear globals, break metatables, disconnect all connections
         if getgenv then
             local genv = getgenv()
             for k, _ in pairs(genv) do
@@ -628,7 +632,6 @@ UtilityTab:CreateButton({
         if script then
             pcall(function() script:Destroy() end)
         end
-        -- Attempt to forcefully break all connections (best effort)
         if getconnections then
             for _,v in ipairs(getconnections(RunService.Heartbeat)) do
                 pcall(function() v:Disable() end)
@@ -637,7 +640,6 @@ UtilityTab:CreateButton({
                 pcall(function() v:Disable() end)
             end
         end
-        -- Attempt to clear Rayfield global if present
         if getgenv and getgenv().Rayfield then
             pcall(function() getgenv().Rayfield = nil end)
         end
