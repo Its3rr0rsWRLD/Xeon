@@ -3,7 +3,7 @@
 -- Made by Its3rr0rsWRLD
 print("⚔️ Loading Ryzor...")
 
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/ae2c7a0513351212d06e5f001a8099af8fb4dafb/source.lua'))()
 
 local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
