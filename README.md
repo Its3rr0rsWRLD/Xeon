@@ -1,4 +1,4 @@
-# 🎭 Ryzor
+# Ryzor
 
 A universal Roblox script hub built with Rayfield UI that dynamically loads scripts from this repository.
 
