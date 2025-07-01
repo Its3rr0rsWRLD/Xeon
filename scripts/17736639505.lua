@@ -116,11 +116,14 @@ local function buyAnyPromptButton(button)
     local prompt = button:FindFirstChildOfClass("ProximityPrompt")
     if button and button.Position and prompt then
         tpTo(button.Position + Vector3.new(0, 3, 0))
-        task.wait(0.2)
-        prompt.Enabled = true
-        prompt.HoldDuration = 0.5
-        prompt.MaxActivationDistance = 10
-        fireproximityprompt(prompt, 0.5)
+        task.wait(0.5)
+        
+        if button.BrickColor and button.BrickColor.Name == "Bright green" then
+            prompt.Enabled = true
+            prompt.HoldDuration = 0.5
+            prompt.MaxActivationDistance = 10
+            fireproximityprompt(prompt, 0.5)
+        end
     end
 end
 

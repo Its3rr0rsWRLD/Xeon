@@ -81,10 +81,8 @@ local function createESP(player)
     if ESPObjects[player] then return end
     ESPObjects[player] = {}
     
-    -- Initialize Highlight as nil - will be created in updateESP
     ESPObjects[player].Highlight = nil
     
-    -- Name text (modern font, above head)
     local name = Drawing.new("Text")
     name.Visible = false
     name.Color = Color3.fromRGB(255, 255, 255)
@@ -96,7 +94,6 @@ local function createESP(player)
     name.Transparency = 1
     ESPObjects[player].Name = name
     
-    -- HP background circle (rounded background)
     local hpBg = Drawing.new("Circle")
     hpBg.Visible = false
     hpBg.Color = Color3.fromRGB(30, 30, 30)
@@ -105,7 +102,6 @@ local function createESP(player)
     hpBg.Transparency = 0.8
     ESPObjects[player].HPBg = hpBg
     
-    -- HP text (below name)
     local hpText = Drawing.new("Text")
     hpText.Visible = false
     hpText.Color = Color3.fromRGB(0, 255, 0)
@@ -117,7 +113,6 @@ local function createESP(player)
     hpText.Transparency = 1
     ESPObjects[player].HPText = hpText
     
-    -- Simple box for debugging (around head)
     local debugBox = Drawing.new("Square")
     debugBox.Visible = false
     debugBox.Color = Color3.fromRGB(255, 0, 0)
@@ -167,13 +162,10 @@ local function updateESP()
             local isEnemyPlayer = isEnemy(player)
             local color = isEnemyPlayer and ESPSettings.EnemyColor or ESPSettings.AllyColor
             
-            -- Ensure Highlight exists and is properly configured
             if not espData.Highlight or not espData.Highlight.Parent or espData.Highlight.Adornee ~= char then
-                -- Remove old highlight if it exists
                 if espData.Highlight and espData.Highlight.Parent then
                     espData.Highlight:Destroy()
                 end
-                -- Create new highlight
                 local highlight = char:FindFirstChild("XeonESPHighlight")
                 if highlight then highlight:Destroy() end
                 
@@ -190,46 +182,38 @@ local function updateESP()
                 espData.Highlight = highlight
             end
             
-            -- Team check: only show ESP for enemies when enabled
             if ESPSettings.TeamCheck and not isEnemyPlayer then
-                -- Hide everything for allies when team check is enabled
                 if espData.Highlight then espData.Highlight.Enabled = false end
                 if espData.Name then espData.Name.Visible = false end
                 if espData.HPBg then espData.HPBg.Visible = false end
                 if espData.HPText then espData.HPText.Visible = false end
                 if espData.DebugBox then espData.DebugBox.Visible = false end
             else
-                -- Show ESP for enemies (or everyone if team check disabled)
                 if espData.Highlight then
                     espData.Highlight.Enabled = true
                     espData.Highlight.FillColor = color
                     espData.Highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
                 end
                 
-                -- Position elements relative to head
                 local headPos = head.Position + Vector3.new(0, head.Size.Y/2 + 1, 0)
                 local headScreen, onScreen = worldToScreen(headPos)
                 if onScreen then
-                    -- Name above head
                     if ESPSettings.ShowNames and espData.Name then
                         espData.Name.Visible = true
                         espData.Name.Color = color
                         espData.Name.Text = player.Name
                         espData.Name.Position = Vector2.new(headScreen.X, headScreen.Y - 25)
-                        -- Debug: Force bright white color to ensure visibility
                         espData.Name.Color = Color3.fromRGB(255, 255, 255)
                     else
                         if espData.Name then espData.Name.Visible = false end
                     end
                     
-                    -- Debug box around head
                     if espData.DebugBox then
                         espData.DebugBox.Visible = true
                         espData.DebugBox.Position = Vector2.new(headScreen.X - 25, headScreen.Y - 15)
-                        espData.DebugBox.Color = Color3.fromRGB(255, 0, 255) -- Bright magenta for visibility
+                        espData.DebugBox.Color = Color3.fromRGB(255, 0, 255)
                     end
                     
-                    -- HP below name with rounded background
                     if ESPSettings.ShowHealth and espData.HPBg and espData.HPText then
                         local hp = math.floor(humanoid.Health)
                         local maxHp = math.floor(humanoid.MaxHealth)
@@ -245,7 +229,6 @@ local function updateESP()
                         espData.HPText.Text = hpText
                         espData.HPText.Position = Vector2.new(headScreen.X, headScreen.Y + 10)
                         
-                        -- Health color coding
                         local healthPercent = humanoid.Health / humanoid.MaxHealth
                         if healthPercent > 0.6 then
                             espData.HPText.Color = Color3.fromRGB(0, 255, 0)
@@ -259,7 +242,6 @@ local function updateESP()
                         if espData.HPText then espData.HPText.Visible = false end
                     end
                 else
-                    -- Player not on screen - hide drawing elements
                     if espData.Name then espData.Name.Visible = false end
                     if espData.HPBg then espData.HPBg.Visible = false end
                     if espData.HPText then espData.HPText.Visible = false end
@@ -287,17 +269,14 @@ local function isTargetVisible(target)
     local endPos = aimPart.Position
     local direction = (endPos - startPos)
     
-    -- Create a more comprehensive filter list
     local filterList = {LocalPlayer.Character}
     
-    -- Add target character parts to filter (so we can hit them)
     if target.Character then
         for _, part in pairs(target.Character:GetChildren()) do
             if part:IsA("BasePart") then
                 table.insert(filterList, part)
             end
         end
-        -- Add accessories and tools
         for _, accessory in pairs(target.Character:GetChildren()) do
             if accessory:IsA("Accessory") and accessory:FindFirstChild("Handle") then
                 table.insert(filterList, accessory.Handle)
@@ -314,16 +293,13 @@ local function isTargetVisible(target)
     
     local raycastResult = workspace:Raycast(startPos, direction, raycastParams)
     
-    -- If no obstruction found, target is visible
     if not raycastResult then
         return true
     end
     
-    -- Check if the hit part is part of the target or something we should ignore
     local hitPart = raycastResult.Instance
     local hitParent = hitPart.Parent
     
-    -- Check various parent hierarchies for the target character
     while hitParent and hitParent ~= workspace do
         if hitParent == target.Character then
             return true
@@ -331,7 +307,6 @@ local function isTargetVisible(target)
         hitParent = hitParent.Parent
     end
     
-    -- If we hit something that's not the target, they're behind a wall
     return false
 end
 
@@ -877,18 +852,15 @@ MiscTab:CreateButton({
         local Terrain = workspace.Terrain
         
         pcall(function()
-            -- Reduce lighting quality
             Lighting.GlobalShadows = false
             Lighting.FogEnd = 9e9
             Lighting.Brightness = 0
             
-            -- Reduce terrain quality
             Terrain.WaterWaveSize = 0
             Terrain.WaterWaveSpeed = 0
             Terrain.WaterReflectance = 0
             Terrain.WaterTransparency = 0
             
-            -- Reduce rendering settings
             settings().Rendering.QualityLevel = 1
             settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level04
         end)
@@ -907,7 +879,6 @@ MiscTab:CreateButton({
         local removed = 0
         
         pcall(function()
-            -- Remove terrain decorations
             for _, obj in pairs(workspace:GetDescendants()) do
                 if obj:IsA("Decal") or obj:IsA("Texture") or obj:IsA("SurfaceGui") then
                     obj:Destroy()
