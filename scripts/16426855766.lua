@@ -7,13 +7,13 @@ farmSpeed = 1 - farmSpeed
 
 function createMainWindow()
 	local Window = Rayfield:CreateWindow({
-		Name = "Ryzor | Eat Pizza Simulator",
-		LoadingTitle = "Ryzor Loading",
+		Name = "Xeon | Eat Pizza Simulator",
+		LoadingTitle = "Xeon Loading",
 		LoadingSubtitle = "Eat Pizza Simulator",
 		Theme = "Amethyst",
 		ConfigurationSaving = {
 			Enabled = true,
-			FolderName = "Ryzor",
+			FolderName = "Xeon",
 			FileName = "EatPizzaSimulator"
 		},
 		Discord = {

@@ -21,13 +21,13 @@ end)
 
 function createMainWindow()
     local Window = Rayfield:CreateWindow({
-        Name = "Ryzor | Pyramid Eaters",
-        LoadingTitle = "Ryzor Loading",
+        Name = "Xeon | Pyramid Eaters",
+        LoadingTitle = "Xeon Loading",
         LoadingSubtitle = "Pyramid Eaters",
         Theme = "Amethyst",
         ConfigurationSaving = {
             Enabled = true,
-            FolderName = "Ryzor",
+            FolderName = "Xeon",
             FileName = "PyramidEaters"
         },
         Discord = {

@@ -1,15 +1,15 @@
-# Ryzor
+# Xeon
 
 A universal Roblox script hub built with Rayfield UI that dynamically loads scripts from this repository.
 
-## 🚀 Quick Start with Ryzor Hub
+## 🚀 Quick Start with Xeon Hub
 
 Execute this in your favorite Roblox executor:
 ```lua
-loadstring(game:HttpGet('https://raw.githubusercontent.com/Its3rr0rsWRLD/Ryzor/main/source.lua'))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/Its3rr0rsWRLD/Xeon/main/source.lua'))()
 ```
 
-> **Note:** This is the hub, not the miscellaneous scripts. The hub automatically detects the game you're playing and loads the appropriate scripts. Miscellaneous scripts can be found in the [scripts](https://github.com/Its3rr0rsWRLD/Ryzor/tree/main/scripts/misc/README.md) folder.
+> **Note:** This is the hub, not the miscellaneous scripts. The hub automatically detects the game you're playing and loads the appropriate scripts. Miscellaneous scripts can be found in the [scripts](https://github.com/Its3rr0rsWRLD/Xeon/tree/main/scripts/misc/README.md) folder.
 
 ## ✨ Features
 
@@ -33,7 +33,7 @@ The hub automatically loads scripts for these games:
 
 1. **Current Game Tab** - Shows scripts available for the game you're currently playing
 2. **All Games Tab** - Browse all supported games, organized by category
-3. **Ryzor Hub** - Universal tools that work across multiple games
+3. **Xeon Hub** - Universal tools that work across multiple games
 4. **Settings** - Customize themes and hub behavior
 
 ## 📝 Notes

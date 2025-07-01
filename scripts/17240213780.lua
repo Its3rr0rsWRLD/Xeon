@@ -6,13 +6,13 @@ local debugMode = false
 
 function createMainWindow()
 	local Window = Rayfield:CreateWindow({
-		Name = "Ryzor | BlobEatingSim",
-		LoadingTitle = "Ryzor Loading",
+		Name = "Xeon | BlobEatingSim",
+		LoadingTitle = "Xeon Loading",
 		LoadingSubtitle = "Blob Eating Simulator",
 		Theme = "Amethyst",
 		ConfigurationSaving = {
 			Enabled = true,
-			FolderName = "Ryzor",
+			FolderName = "Xeon",
 			FileName = "BlobEatingSim"
 		},
 		Discord = {
@@ -111,7 +111,7 @@ function createMainWindow()
 								if otherBlobSize and otherBlobSize < playerBlobSize then
 									local character = player.Character or player.CharacterAdded:Wait()
 									character:SetPrimaryPartCFrame(game.Workspace[otherPlayer.Name].Blob.CFrame)
-									if debugMode then print("Moved to eat " .. otherPlayer.Name) end
+									if debugMode then print("[Xeon] Moved to eat " .. otherPlayer.Name) end
 									wait(0.1)
 								end
 							end

@@ -7,26 +7,26 @@ local teleportOffset = 16
 local scriptActive = true
 
 spawn(function()
-    while scriptActive do
-        local player = game.Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        local humanoid = character:WaitForChild("Humanoid")
-        if humanoid.WalkSpeed ~= walkspeed then
-            humanoid.WalkSpeed = walkspeed
-        end
-        wait(0.05)
-    end
+	while scriptActive do
+		local player = game.Players.LocalPlayer
+		local character = player.Character or player.CharacterAdded:Wait()
+		local humanoid = character:WaitForChild("Humanoid")
+		if humanoid.WalkSpeed ~= walkspeed then
+			humanoid.WalkSpeed = walkspeed
+		end
+		wait(0.05)
+	end
 end)
 
 function createMainWindow()
 	local Window = Rayfield:CreateWindow({
-		Name = "Ryzor | Blob Eating Simulator",
-		LoadingTitle = "Ryzor Loading",
+		Name = "Xeon | Blob Eating Simulator",
+		LoadingTitle = "Xeon Loading",
 		LoadingSubtitle = "Blob Eating Simulator",
 		Theme = "Amethyst",
 		ConfigurationSaving = {
 			Enabled = true,
-			FolderName = "Ryzor",
+			FolderName = "Xeon",
 			FileName = "BlobEatingSim2"
 		},
 		Discord = {
@@ -95,7 +95,7 @@ function createMainWindow()
 							wait(0.1)
 						end)
 						if not success then
-							print("Error in Autofarm: ", err)
+							print("[Xeon] Error in Autofarm: ", err)
 						end
 					end
 				end)
@@ -152,7 +152,7 @@ function createMainWindow()
 							wait(0.5)
 						end)
 						if not success then
-							print("Error in Player Eater: ", err)
+							print("[Xeon] Error in Player Eater: ", err)
 						end
 					end
 				end)

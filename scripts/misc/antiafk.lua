@@ -18,14 +18,14 @@ local Statistics = {
     StartTime = tick()
 }
 
-local RyzorHubWindow = Rayfield:CreateWindow({
-    Name = "⚡ Ryzor Hub - Anti-AFK",
+local XeonHubWindow = Rayfield:CreateWindow({
+    Name = "⚡ Xeon Hub - Anti-AFK",
     LoadingTitle = "Anti-AFK Loading",
     LoadingSubtitle = "Premium Anti-AFK Suite",
     Theme = "Ocean",
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = "Ryzor",
+        FolderName = "Xeon",
         FileName = "AntiAFK_Config"
     },
     Discord = {
@@ -36,10 +36,10 @@ local RyzorHubWindow = Rayfield:CreateWindow({
     KeySystem = false
 })
 
-local AntiAFKTab = RyzorHubWindow:CreateTab("🛡️ Anti-AFK", "shield-check")
-local StatsTab = RyzorHubWindow:CreateTab("📊 Statistics", "bar-chart-3")
-local MethodsTab = RyzorHubWindow:CreateTab("⚙️ Methods", "settings")
-local InfoTab = RyzorHubWindow:CreateTab("ℹ️ Information", "info")
+local AntiAFKTab = XeonHubWindow:CreateTab("🛡️ Anti-AFK", "shield-check")
+local StatsTab = XeonHubWindow:CreateTab("📊 Statistics", "bar-chart-3")
+local MethodsTab = XeonHubWindow:CreateTab("⚙️ Methods", "settings")
+local InfoTab = XeonHubWindow:CreateTab("ℹ️ Information", "info")
 
 local MainSection = AntiAFKTab:CreateSection("Anti-AFK Controls")
 local StatusLabel = AntiAFKTab:CreateLabel("Status: Active", "activity", Color3.fromRGB(0, 255, 127))
@@ -130,7 +130,7 @@ InfoTab:CreateParagraph({
 })
 
 InfoTab:CreateDivider()
-InfoTab:CreateLabel("Made for Ryzor Hub", "heart", Color3.fromRGB(255, 105, 180))
+InfoTab:CreateLabel("Made for Xeon Hub", "heart", Color3.fromRGB(255, 105, 180))
 
 local function formatTime(seconds)
     local minutes = math.floor(seconds / 60)
@@ -273,14 +273,14 @@ end)
 
 Rayfield:Notify({
     Title = "Anti-AFK Loaded!",
-    Content = "Ryzor Hub Anti-AFK system is now active and protecting you from kicks!",
+    Content = "Xeon Hub Anti-AFK system is now active and protecting you from kicks!",
     Duration = 6,
     Image = "shield-check"
 })
 
-print("Ryzor Hub Anti-AFK Script Loaded Successfully!")
-print("Features:")
-print("• Multiple anti-AFK methods")
-print("• Real-time statistics")
-print("• Configurable settings")
-print("• Beautiful Rayfield UI")
+print("[Xeon] Hub Anti-AFK Script Loaded Successfully!")
+print("[Xeon] Features:")
+print("[Xeon] Multiple anti-AFK methods")
+print("[Xeon] Real-time statistics")
+print("[Xeon] Configurable settings")
+print("[Xeon] Beautiful Rayfield UI")
