@@ -9,7 +9,7 @@ local actionDelay = 1
 local autofarmEnabled = true
 
 local Window = Rayfield:CreateWindow({
-    Name = "Xeon | Autofarm",
+    Name = "Xeon | Marble Tycoon",
     LoadingTitle = "Xeon Loading",
     LoadingSubtitle = "Autofarm",
     Theme = "Amethyst",

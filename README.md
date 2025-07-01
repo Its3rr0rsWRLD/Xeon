@@ -2,7 +2,7 @@
 
 A universal Roblox script hub built with Rayfield UI that dynamically loads scripts from this repository.
 
-## 🚀 Quick Start with Xeon Hub
+## Quick Start with Xeon Hub
 
 Execute this in your favorite Roblox executor:
 ```lua
@@ -11,7 +11,7 @@ loadstring(game:HttpGet('https://raw.githubusercontent.com/Its3rr0rsWRLD/Xeon/ma
 
 > **Note:** This is the hub, not the miscellaneous scripts. The hub automatically detects the game you're playing and loads the appropriate scripts. Miscellaneous scripts can be found in the [scripts](https://github.com/Its3rr0rsWRLD/Xeon/tree/main/scripts/misc/README.md) folder.
 
-## ✨ Features
+## Features
 
 - **Dynamic Script Loading** - Automatically scans the repository for available game scripts
 - **Modern UI** - Clean Rayfield interface with organized tabs and categories  
@@ -19,7 +19,7 @@ loadstring(game:HttpGet('https://raw.githubusercontent.com/Its3rr0rsWRLD/Xeon/ma
 - **Universal Tools** - Anti-AFK and other cross-game utilities
 - **Easy Navigation** - Browse all supported games with search and categorization
 
-## 🎮 Currently Supported Games
+## Currently Supported Games
 
 The hub automatically loads scripts for these games:
 - Blob Eating Simulator (17240213780)
@@ -29,14 +29,14 @@ The hub automatically loads scripts for these games:
 
 *Scripts are added regularly - the hub will show newly supported games automatically*
 
-## 🛠️ How It Works
+## How It Works
 
 1. **Current Game Tab** - Shows scripts available for the game you're currently playing
 2. **All Games Tab** - Browse all supported games, organized by category
 3. **Xeon Hub** - Universal tools that work across multiple games
 4. **Settings** - Customize themes and hub behavior
 
-## 📝 Notes
+## Notes
 
 - All scripts use modern Rayfield UI for consistency
 - Game ID validation prevents scripts from running on wrong games
