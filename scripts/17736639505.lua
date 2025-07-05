@@ -3,10 +3,11 @@ local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/Its3rr0rsWRLD/Rayfield/refs/heads/main/source.lua'))()
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
 
 local actionDelay = 1
 local autofarmEnabled = true
+local playerTemplate = nil
 
 local Window = Rayfield:CreateWindow({
     Name = "Xeon | Marble Tycoon",
@@ -29,6 +30,27 @@ MainTab:CreateToggle({
     CurrentValue = autofarmEnabled,
     Flag = "AutofarmEnabled",
     Callback = function(Value) autofarmEnabled = Value end
+})
+MainTab:CreateButton({
+    Name = "Update Plot",
+    Callback = function()
+        playerTemplate = findPlayerTemplate()
+        if playerTemplate then
+            Rayfield:Notify({
+                Title = "Plot Found",
+                Content = "Successfully found your plot!",
+                Duration = 3,
+                Image = "check"
+            })
+        else
+            Rayfield:Notify({
+                Title = "Plot Not Found",
+                Content = "Using closest template method",
+                Duration = 3,
+                Image = "alert-triangle"
+            })
+        end
+    end
 })
 MainTab:CreateSlider({
     Name = "Autofarm Delay (seconds)",
@@ -82,6 +104,37 @@ local function getClosestTemplate()
     return closest, closestPad
 end
 
+local function findPlayerTemplate()
+    local templates = getTemplates()
+    local playerName = LocalPlayer.Name
+    
+    for _, template in ipairs(templates) do
+        local ownerSign = template:FindFirstChild("OwnerSign")
+        if ownerSign then
+            local surfaceGui = ownerSign:FindFirstChild("SurfaceGui")
+            if surfaceGui then
+                local textLabel = surfaceGui:FindFirstChild("TextLabel")
+                if textLabel and textLabel.Text then
+                    if string.find(textLabel.Text, playerName) then
+                        return template
+                    end
+                end
+            end
+        end
+    end
+    
+    return nil
+end
+
+local function getCurrentTemplate()
+    if playerTemplate then
+        return playerTemplate
+    end
+    
+    local template, pad = getClosestTemplate()
+    return template
+end
+
 local function getMoneyValue(money)
     if money:IsA("TextLabel") or money:IsA("TextButton") then
         return money.Text
@@ -96,9 +149,12 @@ local function tpTo(pos)
 end
 
 local function claimMoney()
-    local template, pad = getClosestTemplate()
-    if template and pad then
-        tpTo(pad.Position + Vector3.new(0, 5, 0))
+    local template = getCurrentTemplate()
+    if template then
+        local money, displayBase, pad = getMoneyDisplay(template)
+        if pad then
+            tpTo(pad.Position + Vector3.new(0, 5, 0))
+        end
     end
 end
 
@@ -133,8 +189,9 @@ RunService.RenderStepped:Connect(function()
     if not autofarmEnabled then return end
     if tick() - lastAction < actionDelay then return end
     lastAction = tick()
-    local template, pad = getClosestTemplate()
-    if template and pad then
+    
+    local template = getCurrentTemplate()
+    if template then
         local money, _, _ = getMoneyDisplay(template)
         if money then
             claimMoney()
